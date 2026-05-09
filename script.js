@@ -223,49 +223,93 @@ document.addEventListener('keydown', e => {
   flashVis(drum);
 });
 
-// ── パターン定義（16ステップ） ────────────────────────
-// 1=on, 0=off  / 1ステップ = 16分音符
+// ── パターン定義 ──────────────────────────────────────
+// steps       : 1小節のステップ数
+// stepsPerBeat: 1拍あたりのステップ数（時間計算用）
+// rows        : [{ label, drum, seq }]
 const PATTERNS = {
   beat4: {
-    hh:    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
-    kick:  [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
-    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+    label: '4ビート再生中',
+    steps: 16, stepsPerBeat: 4,
+    rows: [
+      { label: 'HH', drum: 'ch',    seq: [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0] },
+      { label: 'BD', drum: 'kick',  seq: [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0] },
+      { label: 'SD', drum: 'snare', seq: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0] },
+    ],
   },
   beat8: {
-    hh:    [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
-    kick:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,0,0],
-    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+    label: '8ビート再生中',
+    steps: 16, stepsPerBeat: 4,
+    rows: [
+      { label: 'HH', drum: 'ch',    seq: [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0] },
+      { label: 'BD', drum: 'kick',  seq: [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,0,0] },
+      { label: 'SD', drum: 'snare', seq: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0] },
+    ],
+  },
+  // 12ステップ = 4拍 × 3（三連符グリッド）でスウィング感を表現
+  swing: {
+    label: 'Swing Jazz 再生中',
+    steps: 12, stepsPerBeat: 3,
+    rows: [
+      { label: 'RD', drum: 'ride',  seq: [1,0,1, 1,0,1, 1,0,1, 1,0,1] },
+      { label: 'BD', drum: 'kick',  seq: [1,0,0, 0,0,0, 1,0,0, 0,0,0] },
+      { label: 'SD', drum: 'snare', seq: [0,0,0, 1,0,0, 0,0,0, 1,0,0] },
+    ],
+  },
+  // 16ステップ / ボサノバ独特のシンコペーションを再現
+  bossa: {
+    label: 'Bossa Nova 再生中',
+    steps: 16, stepsPerBeat: 4,
+    rows: [
+      { label: 'HH', drum: 'ch',    seq: [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0] },
+      { label: 'BD', drum: 'kick',  seq: [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,0,0] },
+      // クロススティック: a拍+次の頭の2連アクセントが特徴
+      { label: 'CS', drum: 'snare', seq: [0,0,0,1, 1,0,0,0, 0,0,0,1, 1,0,0,0] },
+    ],
   },
 };
 
 // ── ステップ表示 ───────────────────────────────────────
-const STEP_COUNT = 16;
-const rowIds = { hh: 'steps-hh', kick: 'steps-kick', snare: 'steps-snare' };
-const stepCells = { hh: [], kick: [], snare: [] };
+let rowCells = [];  // rowCells[rowIndex][stepIndex]
 
 function buildStepDisplay(patternKey) {
   const p = PATTERNS[patternKey];
-  Object.entries(rowIds).forEach(([key, elId]) => {
-    const el = document.getElementById(elId);
-    el.innerHTML = '';
-    stepCells[key] = [];
-    for (let i = 0; i < STEP_COUNT; i++) {
+  const container = document.getElementById('step-display');
+  container.innerHTML = '';
+  rowCells = [];
+
+  p.rows.forEach(row => {
+    const wrap = document.createElement('div');
+    wrap.className = 'step-row-wrap';
+
+    const lbl = document.createElement('span');
+    lbl.className = 'step-row-label';
+    lbl.textContent = row.label;
+    wrap.appendChild(lbl);
+
+    const rowEl = document.createElement('div');
+    rowEl.className = 'step-row';
+    const cells = [];
+    for (let i = 0; i < p.steps; i++) {
       const cell = document.createElement('div');
-      cell.className = 'step-cell' + (p[key][i] ? ' on' : '');
-      el.appendChild(cell);
-      stepCells[key].push(cell);
+      cell.className = 'step-cell' + (row.seq[i] ? ' on' : '');
+      rowEl.appendChild(cell);
+      cells.push(cell);
     }
+    wrap.appendChild(rowEl);
+    container.appendChild(wrap);
+    rowCells.push(cells);
   });
 }
 
 function clearStepDisplay() {
-  Object.values(rowIds).forEach(elId => { document.getElementById(elId).innerHTML = ''; });
-  Object.keys(stepCells).forEach(k => { stepCells[k] = []; });
+  document.getElementById('step-display').innerHTML = '';
+  rowCells = [];
 }
 
 function markCurrentStep(step) {
-  Object.keys(stepCells).forEach(key => {
-    stepCells[key].forEach((cell, i) => cell.classList.toggle('current', i === step));
+  rowCells.forEach(cells => {
+    cells.forEach((cell, i) => cell.classList.toggle('current', i === step));
   });
 }
 
@@ -279,20 +323,25 @@ const LOOKAHEAD = 0.1;
 
 function scheduleStep(step, t) {
   const p = PATTERNS[currentPatternKey];
-  if (p.hh[step])    { triggerDrum('ch', t);    flashPad('ch');    flashVis('ch'); }
-  if (p.kick[step])  { triggerDrum('kick', t);  flashPad('kick');  flashVis('kick'); }
-  if (p.snare[step]) { triggerDrum('snare', t); flashPad('snare'); flashVis('snare'); }
-
   const delay = Math.max(0, (t - getCtx().currentTime) * 1000);
+
+  p.rows.forEach(row => {
+    if (row.seq[step]) {
+      triggerDrum(row.drum, t);
+      setTimeout(() => { flashPad(row.drum); flashVis(row.drum); }, delay);
+    }
+  });
+
   setTimeout(() => markCurrentStep(step), delay);
 }
 
 function runScheduler() {
   const ctx = getCtx();
+  const p = PATTERNS[currentPatternKey];
   while (nextStepTime < ctx.currentTime + LOOKAHEAD) {
     scheduleStep(currentStep, nextStepTime);
-    nextStepTime += 60 / bpm / 4;
-    currentStep = (currentStep + 1) % STEP_COUNT;
+    nextStepTime += 60 / bpm / p.stepsPerBeat;
+    currentStep = (currentStep + 1) % p.steps;
   }
 }
 
@@ -306,7 +355,7 @@ function startPattern(patternKey) {
   schedulerTimer = setInterval(runScheduler, 25);
 
   statusDot.className = 'playing';
-  statusText.textContent = patternKey === 'beat4' ? '4ビート再生中' : '8ビート再生中';
+  statusText.textContent = PATTERNS[patternKey].label;
   document.querySelectorAll('.pattern-btn').forEach(b =>
     b.classList.toggle('playing', b.dataset.pattern === patternKey)
   );
