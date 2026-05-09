@@ -199,6 +199,7 @@ document.querySelectorAll('.pad').forEach(pad => {
 
   pad.addEventListener('pointerdown', e => {
     e.preventDefault();
+    e.target.releasePointerCapture(e.pointerId);
     triggerDrum(drum);
     flashPad(drum);
     flashVis(drum);
