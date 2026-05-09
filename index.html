@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Web Drum — フィンガードラムパッド</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo">Web<span>Drum</span></div>
+  <div class="header-right">
+    <div id="status">
+      <div id="status-dot"></div>
+      <span id="status-text">準備完了</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ビジュアライザー -->
+  <div id="visualizer">
+    <div id="vis-label">SOUND</div>
+    <div id="vis-bars"></div>
+  </div>
+
+  <!-- ドラムパッドグリッド -->
+  <div id="pad-grid">
+    <button class="pad color-hh"     data-drum="oh"    data-key="Q">Open HH<span class="pad-key">Q</span></button>
+    <button class="pad color-hh"     data-drum="ch"    data-key="W">Closed HH<span class="pad-key">W</span></button>
+    <button class="pad color-cymbal" data-drum="crash" data-key="E">Crash<span class="pad-key">E</span></button>
+    <button class="pad color-cymbal" data-drum="ride"  data-key="R">Ride<span class="pad-key">R</span></button>
+
+    <button class="pad color-tom"    data-drum="htom"  data-key="A">Hi Tom<span class="pad-key">A</span></button>
+    <button class="pad color-tom"    data-drum="mtom"  data-key="S">Mid Tom<span class="pad-key">S</span></button>
+    <button class="pad color-snare"  data-drum="snare" data-key="D">Snare<span class="pad-key">D</span></button>
+    <button class="pad color-snare"  data-drum="clap"  data-key="F">Clap<span class="pad-key">F</span></button>
+
+    <button class="pad pad-kick color-kick" data-drum="kick" data-key="Space">Kick<span class="pad-key">Space</span></button>
+  </div>
+
+  <!-- オートプレイ -->
+  <div class="card">
+    <div class="card-label">AUTO PLAY</div>
+    <div id="auto-controls">
+      <div id="bpm-control">
+        <span class="ctrl-label">BPM</span>
+        <button id="bpm-down">−</button>
+        <span id="bpm-value">120</span>
+        <button id="bpm-up">＋</button>
+        <input type="range" id="bpm-slider" min="60" max="200" value="120" />
+      </div>
+      <div id="pattern-buttons">
+        <button class="pattern-btn" data-pattern="beat4">4ビート</button>
+        <button class="pattern-btn" data-pattern="beat8">8ビート</button>
+        <button id="stop-btn" disabled>■ 停止</button>
+      </div>
+    </div>
+    <div id="step-display">
+      <div class="step-row-wrap">
+        <span class="step-row-label">HH</span>
+        <div class="step-row" id="steps-hh"></div>
+      </div>
+      <div class="step-row-wrap">
+        <span class="step-row-label">BD</span>
+        <div class="step-row" id="steps-kick"></div>
+      </div>
+      <div class="step-row-wrap">
+        <span class="step-row-label">SD</span>
+        <div class="step-row" id="steps-snare"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
